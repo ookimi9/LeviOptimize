@@ -1,1 +1,30 @@
+name: Build ARM64
 
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ARM64 cross-compiler
+        run: sudo apt-get install -y g++-aarch64-linux-gnu
+
+      - name: Compile libLeviOptimize.so (aarch64)
+        run: |
+          aarch64-linux-gnu-g++ \
+            -std=c++20 -O3 -fPIC -shared \
+            -fvisibility=hidden \
+            -ffunction-sections -fdata-sections \
+            -Wl,--gc-sections -s \
+            -o libLeviOptimize.so \
+            levioptimize.cpp \
+            -ldl
+          file libLeviOptimize.so
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libLeviOptimize-arm64
+          path: libLeviOptimize.so
